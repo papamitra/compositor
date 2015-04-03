@@ -8,8 +8,9 @@ find_package(PkgConfig)
 
 # cmake 3.1 or later
 #set(PKG_CONFIG_PATH /usr/local/lib/pkgconfig)
-
 set($ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/lib/pkgconfig")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
 
 pkg_check_modules(WAYLAND_SERVER REQUIRED wayland-server)
 
