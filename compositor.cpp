@@ -2,33 +2,23 @@
 #include <wayland-server.h>
 
 #include <cassert>
+#include <cstdio>
 
-const wl_message requests[] = {
-    {"stop", "", NULL},
-};
+#include <unistd.h>
 
-const wl_message events[] = {
-    {"resume", "", NULL},
-};
-
-const wl_interface compositor_interface = {
-    "compositor", 1,
-    1, requests,
-    1, events
-};
-
-struct compositor_interface {
-    void (*stop)(struct wl_client *client,
-                 struct wl_resource *resource);
-};
+#include "protocol-server.h"
 
 static void
 handle_stop_display(struct wl_client *client,
                     struct wl_resource *resource)
 {
+    printf("handle_stop_display\n");
+
     wl_display *d = static_cast<wl_display*>(wl_resource_get_user_data(resource));
 
-    wl_display_terminate(d);
+    wl_resource_post_event(resource, STOPPED);
+
+//    wl_display_terminate(d);
 }
 
 static const struct compositor_interface implementation = {
@@ -39,9 +29,9 @@ static void
 compositor_bind(struct wl_client *client, void *data,
                 uint32_t ver, uint32_t id)
 {
-    struct wl_resource *res;
+    printf("compositor_bind\n");
 
-    res = wl_resource_create(client, &compositor_interface, ver, id);
+    wl_resource* const res = wl_resource_create(client, &compositor_interface, ver, id);
     if (!res) {
         wl_client_post_no_memory(client);
         assert(0 && "Out of memory");
@@ -57,6 +47,9 @@ int main(void) {
     wl_global* const g = wl_global_create(d, &compositor_interface,
                                     1, d, compositor_bind);
     assert(g);
+
+    const int stat = wl_display_add_socket(d, "wayland-0");
+    assert(stat == 0);
 
     wl_display_run(d);
 
