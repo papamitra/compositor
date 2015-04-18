@@ -1,26 +1,15 @@
 
 #include <wayland-client.h>
+#include <wayland-client-protocol.h>
 
 #include <cassert>
 #include <cstdio>
 #include <string>
 #include <memory>
 
-#include "protocol-client.h"
-
-static bool done = false;
-
-static void handle_stopped(void*, void*) {
-    printf("handle_stopped\n");
-    done = true;
-}
-
-static const struct compositor_listener compositor_listener = {
-	handle_stopped
-};
-
 struct client {
     wl_display* display;
+    wl_compositor* compositor;
     wl_proxy* object;
 };
 
@@ -33,15 +22,11 @@ registry_handle_global(void *data, struct wl_registry *registry,
     printf("registry_handle_globals: %s\n", intf);
     const std::string ifname = intf;
 
-    if (ifname != "compositor") return;
-
-    void* interface = wl_registry_bind(registry, id, &compositor_interface, ver);
-    assert(interface);
-    c->object = static_cast<wl_proxy*>(interface);
-
-    wl_proxy_add_listener(static_cast<wl_proxy *>(interface),
-                          (void (**)(void)) &compositor_listener, data);
-
+    if (ifname == "wl_compositor") {
+        c->compositor = static_cast<wl_compositor*>(
+            wl_registry_bind(registry, id,
+                             &wl_compositor_interface, ver));
+    }
 }
 
 static const struct wl_registry_listener registry_listener = {
@@ -62,12 +47,14 @@ int main(int argc, char *argv[])
     wl_registry_add_listener(r, &registry_listener, c);
     assert(wl_display_roundtrip(d) != -1);
 
-    wl_proxy_marshal((struct wl_proxy *) c->object, STOP);
-
     wl_display_flush(d);
 
-    while( done == false)
-        wl_display_dispatch(d);
+    wl_surface* surface = wl_compositor_create_surface(c->compositor);
+
+    wl_display_roundtrip(d);
+
+//    while( done == false)
+//        wl_display_dispatch(d);
 
     wl_display_disconnect(d);
 
