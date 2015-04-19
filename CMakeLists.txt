@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8)
 project (compositor)
 
-add_executable(compositor compositor.cpp)
+add_executable(compositor server.cpp compositor.cpp)
 add_executable(client client.cpp)
 
 find_package(PkgConfig)
