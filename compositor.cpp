@@ -1,5 +1,6 @@
 
 #include "compositor.hpp"
+#include "surface.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -9,12 +10,6 @@
 
 namespace yawc {
 
-struct surface {
-    wl_resource* resource;
-};
-
-static const struct wl_surface_interface surface_interface = {};
-
 namespace {
 
 void handle_create_surface(
@@ -23,24 +18,16 @@ void handle_create_surface(
 {
     std::clog << __PRETTY_FUNCTION__ << std::endl;
 
-	compositor *comp = static_cast<compositor*>(wl_resource_get_user_data(resource));
-	surface *sf = new surface{};
+    compositor * const comp = static_cast<compositor*>(wl_resource_get_user_data(resource));
 
-	if (!sf) {
-		wl_resource_post_no_memory(resource);
-		return;
-	}
+    const int ver = wl_resource_get_version(resource);
 
-	sf->resource =
-		wl_resource_create(client, &wl_surface_interface,
-				   wl_resource_get_version(resource), id);
-	if (!sf->resource) {
-        delete sf;
+    try {
+        surface* surf = new surface{client, ver, id};
+    } catch (std::bad_alloc&) {
         wl_resource_post_no_memory(resource);
-        return;
     }
-    wl_resource_set_implementation(sf->resource, &surface_interface,
-                                   sf, nullptr /*TODO: destroy_surface*/);
+
 }
 
 static const struct wl_compositor_interface compositor_interface = {
