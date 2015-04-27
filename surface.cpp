@@ -10,9 +10,26 @@
 namespace yawc {
 
 namespace {
-const struct wl_surface_interface interface = {};
 
-void destroy_surface(struct wl_resource *resource)
+void destroy_surface(struct wl_client *client, struct wl_resource *resource) {
+    std::clog << __PRETTY_FUNCTION__ << std::endl;
+    wl_resource_destroy(resource);
+}
+
+void surface_attach(struct wl_client *client,
+                    struct wl_resource *resource,
+                    struct wl_resource *buffer,
+                    int32_t x,
+                    int32_t y) {
+    std::clog << __PRETTY_FUNCTION__ << std::endl;
+}
+
+const struct wl_surface_interface interface = {
+    destroy_surface,
+    surface_attach,
+};
+
+void destroy_surface_resource(struct wl_resource *resource)
 {
     std::clog << __PRETTY_FUNCTION__ << std::endl;
 
@@ -35,7 +52,7 @@ surface::surface(wl_client* client, int ver, uint32_t id) : resource_(nullptr) {
     }
 
     wl_resource_set_implementation(resource_, &interface,
-                                   this, destroy_surface);
+                                   this, destroy_surface_resource);
 }
 
 surface::~surface() {
