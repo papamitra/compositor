@@ -117,7 +117,7 @@ int main(void) {
 
     egl_init(dpy);
 
-    yawc::compositor::global_create(dpy);
+    yawc::compositor::initialize(dpy);
 
     const int stat = wl_display_add_socket(dpy, "wayland-0");
     assert(stat == 0);

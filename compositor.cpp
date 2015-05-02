@@ -51,12 +51,14 @@ void handle_bind(struct wl_client *client, void *data,
 
 }
 
-void compositor::global_create(wl_display* disp) {
-    static compositor comp{disp};
+void compositor::initialize(wl_display* dpy) {
+    static compositor comp{dpy};
 
-    wl_global* const g = wl_global_create(disp, &wl_compositor_interface,
+    wl_global* const g = wl_global_create(dpy, &wl_compositor_interface,
                                           1, &comp, handle_bind);
     assert(g);
+
+    wl_display_init_shm(dpy);
 }
 
 } // namespace yawc

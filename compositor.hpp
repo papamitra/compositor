@@ -20,7 +20,7 @@ class compositor {
     
 public:
 
-    static void global_create(wl_display* disp);
+    static void initialize(wl_display* disp);
 
 };
 
