@@ -4,6 +4,7 @@ project (compositor)
 
 add_executable(compositor server.cpp compositor.cpp surface.cpp)
 add_executable(client clients/client.cpp)
+add_executable(client-shm clients/client-shm.cpp)
 
 find_package(PkgConfig)
 
@@ -29,3 +30,4 @@ target_link_libraries(compositor
   )
 
 target_link_libraries(client ${WAYLAND_CLIENT_LIBRARIES} ${WAYLAND_EGL_LIBRARIES} ${EGL_LIBRARIES})
+target_link_libraries(client-shm ${WAYLAND_CLIENT_LIBRARIES})
