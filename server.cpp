@@ -74,6 +74,7 @@ void egl_init(wl_display* wl_dpy)
         EGL_GREEN_SIZE, 1,
         EGL_BLUE_SIZE, 1,
         EGL_ALPHA_SIZE, 0,
+        EGL_BUFFER_SIZE, 32,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
         EGL_NONE
     };
@@ -104,9 +105,9 @@ void egl_init(wl_display* wl_dpy)
     PFNEGLBINDWAYLANDDISPLAYWL bind_display =
         reinterpret_cast<PFNEGLBINDWAYLANDDISPLAYWL>(eglGetProcAddress("eglBindWaylandDisplayWL"));
 
-    assert(bind_display);
-
-    assert(bind_display(eglDisplay, wl_dpy));
+    if(bind_display) {
+        bind_display(eglDisplay, wl_dpy);
+    }
 
 }
 

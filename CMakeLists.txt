@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project (compositor)
 
 add_executable(compositor server.cpp compositor.cpp surface.cpp)
-add_executable(client client.cpp)
+add_executable(client clients/client.cpp)
 
 find_package(PkgConfig)
 
@@ -11,7 +11,7 @@ find_package(X11 REQUIRED)
 
 # cmake 3.1 or later
 #set(PKG_CONFIG_PATH /usr/local/lib/pkgconfig)
-set($ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/lib/pkgconfig")
+set($ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:$ENV{HOME}/usrfs/lib/pkgconfig")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -g -O0")
 
