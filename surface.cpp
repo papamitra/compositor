@@ -38,14 +38,14 @@ buffer* buffer_from_resource(struct wl_resource *resource)
 		return container_of(listener, struct buffer,
                             destroy_listener);
 
-	buffer* buf = new buffer;
-	buf->resource = resource;
+	auto buffer = new struct buffer;
+	buffer->resource = resource;
 //	wl_signal_init(&buffer->destroy_signal);
-	buf->destroy_listener.notify = buffer_destroy_handler;
+	buffer->destroy_listener.notify = buffer_destroy_handler;
 //	buffer->y_inverted = 1;
-	wl_resource_add_destroy_listener(resource, &buf->destroy_listener);
+	wl_resource_add_destroy_listener(resource, &buffer->destroy_listener);
 
-	return buf;
+	return buffer;
 }
 
 void destroy_surface(struct wl_client *client, struct wl_resource *resource) {
@@ -63,27 +63,43 @@ void surface_attach(struct wl_client *client,
     auto *surface = static_cast<struct surface*>(wl_resource_get_user_data(resource));
     buffer* buffer=NULL;
 
-	if (buffer_resource) {
-		buffer = buffer_from_resource(buffer_resource);
-		if (buffer == NULL) {
-			wl_client_post_no_memory(client);
-			return;
-		}
-	}
+    if (buffer_resource) {
+        buffer = buffer_from_resource(buffer_resource);
+        if (buffer == NULL) {
+            wl_client_post_no_memory(client);
+            return;
+        }
+    }
 
-	/* Attach, attach, without commit in between does not send
-	 * wl_buffer.release. */
-//	weston_surface_state_set_buffer(&surface->pending, buffer);
+/* Attach, attach, without commit in between does not send
+ * wl_buffer.release. */
+//weston_surface_state_set_buffer(&surface->pending, buffer);
 
     surface->buffer = buffer;
-	surface->x = sx;
-	surface->y = sy;
-    
+    surface->x = sx;
+    surface->y = sy;
+
+}
+
+static void surface_commit(struct wl_client *client, struct wl_resource *resource) {
+    std::clog << __PRETTY_FUNCTION__ << std::endl;
+
+    auto surface = static_cast<struct surface*>(wl_resource_get_user_data(resource));
+
+    wl_shm_buffer* buffer = wl_shm_buffer_get(surface->buffer->resource);
+
+    std::clog << "stride == " << wl_shm_buffer_get_stride(buffer) << std::endl;
+
 }
 
 const struct wl_surface_interface interface = {
     destroy_surface,
     surface_attach,
+    NULL, //surface_damage,
+    NULL, //surface_frame,
+    NULL, //surface_set_opaque_region,
+    NULL, //surface_set_input_region,
+    surface_commit,
 };
 
 void destroy_surface_resource(struct wl_resource *resource)

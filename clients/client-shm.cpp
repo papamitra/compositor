@@ -173,9 +173,15 @@ int main(int argc, char *argv[])
     auto buffer = new yawc::buffer;
     yawc::create_shm_buffer(display, buffer, 200,100, WL_SHM_FORMAT_XRGB8888);
 
+    memset(buffer->shm_data, 0x00,
+           200 * 100 * 4);
+
     wl_surface_attach(surface, buffer->buffer, 0, 0);
+
+    wl_surface_commit(surface);
 
     assert(wl_display_roundtrip(display->display) != -1);
     yawc::draw(*display, surface);
 
+    for(;;);
 }
