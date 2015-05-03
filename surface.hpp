@@ -5,9 +5,13 @@
 
 namespace yawc {
 
-class surface {
-    wl_resource* resource_;
-public:
+struct buffer;
+struct surface {
+    wl_resource* resource;
+    int32_t x;
+    int32_t y;
+    buffer* buf;
+
     surface(wl_client* client, int ver, uint32_t id);
     ~surface();
 };
