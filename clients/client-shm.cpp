@@ -18,7 +18,7 @@ namespace yawc {
 
 struct display;
 struct client {
-    display* dpy;
+    struct display* display;
     wl_compositor* compositor;
     wl_proxy* object;
 };
@@ -69,7 +69,7 @@ static const struct wl_buffer_listener buffer_listener = {
 };
 
 static int
-create_shm_buffer(struct display *display, struct buffer *buf,
+create_shm_buffer(struct display *display, struct buffer *buffer,
                   int width, int height, uint32_t format)
 {
     std::cerr << __PRETTY_FUNCTION__ << std::endl;
@@ -95,14 +95,14 @@ create_shm_buffer(struct display *display, struct buffer *buf,
     }
 
     pool = wl_shm_create_pool(display->shm, fd, size);
-    buf->buffer = wl_shm_pool_create_buffer(pool, 0,
-                                               width, height,
-                                               stride, format);
-    wl_buffer_add_listener(buf->buffer, &buffer_listener, buf);
+    buffer->buffer = wl_shm_pool_create_buffer(pool, 0,
+                                            width, height,
+                                            stride, format);
+    wl_buffer_add_listener(buffer->buffer, &buffer_listener, buffer);
     wl_shm_pool_destroy(pool);
     close(fd);
 
-    buf->shm_data = data;
+    buffer->shm_data = data;
 
     return 0;
 }
@@ -133,9 +133,9 @@ registry_handle_global(void *data, struct wl_registry *registry,
             wl_registry_bind(registry, id,
                              &wl_compositor_interface, ver));
     } else if (ifname == "wl_shm") {
-        c->dpy->shm = static_cast<wl_shm*>(wl_registry_bind(registry,
+        c->display->shm = static_cast<wl_shm*>(wl_registry_bind(registry,
                                                             id, &wl_shm_interface, 1));
-        wl_shm_add_listener(c->dpy->shm, &shm_listener, c->dpy);
+        wl_shm_add_listener(c->display->shm, &shm_listener, c->display);
 	}
 
 }
@@ -155,27 +155,27 @@ void draw(display& dpy, wl_surface* surface) {
 int main(int argc, char *argv[])
 {
     auto c = new yawc::client{};
-    auto dpy = new yawc::display{};
-    c->dpy = dpy;
+    auto display = new yawc::display{};
+    c->display = display;
 
-    dpy->display = wl_display_connect(NULL);
-    assert(dpy->display);
+    display->display = wl_display_connect(NULL);
+    assert(display->display);
 
-    wl_registry* const r = wl_display_get_registry(dpy->display);
+    wl_registry* const r = wl_display_get_registry(display->display);
 
     wl_registry_add_listener(r, &yawc::registry_listener, c);
-    assert(wl_display_roundtrip(dpy->display) != -1);
+    assert(wl_display_roundtrip(display->display) != -1);
 
-    wl_display_flush(dpy->display);
+    wl_display_flush(display->display);
 
     wl_surface* surface = wl_compositor_create_surface(c->compositor);
 
     auto buffer = new yawc::buffer;
-    yawc::create_shm_buffer(dpy, buffer, 200,100, WL_SHM_FORMAT_XRGB8888);
+    yawc::create_shm_buffer(display, buffer, 200,100, WL_SHM_FORMAT_XRGB8888);
 
     wl_surface_attach(surface, buffer->buffer, 0, 0);
 
-    assert(wl_display_roundtrip(dpy->display) != -1);
-    yawc::draw(*dpy, surface);
+    assert(wl_display_roundtrip(display->display) != -1);
+    yawc::draw(*display, surface);
 
 }

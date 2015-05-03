@@ -60,12 +60,12 @@ void surface_attach(struct wl_client *client,
                     int32_t sy) {
     std::clog << __PRETTY_FUNCTION__ << std::endl;
 
-    surface *surf = static_cast<surface*>(wl_resource_get_user_data(resource));
-    buffer* buf=NULL;
+    auto *surface = static_cast<struct surface*>(wl_resource_get_user_data(resource));
+    buffer* buffer=NULL;
 
 	if (buffer_resource) {
-		buf = buffer_from_resource(buffer_resource);
-		if (buf == NULL) {
+		buffer = buffer_from_resource(buffer_resource);
+		if (buffer == NULL) {
 			wl_client_post_no_memory(client);
 			return;
 		}
@@ -75,9 +75,9 @@ void surface_attach(struct wl_client *client,
 	 * wl_buffer.release. */
 //	weston_surface_state_set_buffer(&surface->pending, buffer);
 
-    surf->buf = buf;
-	surf->x = sx;
-	surf->y = sy;
+    surface->buffer = buffer;
+	surface->x = sx;
+	surface->y = sy;
     
 }
 

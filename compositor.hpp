@@ -13,14 +13,12 @@
 
 namespace yawc{
 
-class compositor {
-    wl_display* display_;
+struct compositor {
+    wl_display* display;
 
-    compositor(wl_display* disp): display_(disp) {}
-    
-public:
+    compositor(wl_display* display): display(display) {}
 
-    static void initialize(wl_display* disp);
+    static void initialize(wl_display* display);
 
 };
 

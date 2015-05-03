@@ -10,7 +10,7 @@ struct surface {
     wl_resource* resource;
     int32_t x;
     int32_t y;
-    buffer* buf;
+    struct buffer* buffer;
 
     surface(wl_client* client, int ver, uint32_t id);
     ~surface();

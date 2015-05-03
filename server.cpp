@@ -11,7 +11,7 @@
 static Display* xdisp;
 static Window window;
 
-EGLDisplay eglDisplay;
+EGLDisplay egl_display;
 EGLContext eglContext;
 EGLSurface eglSurface;
 
@@ -47,7 +47,7 @@ static void initX()
     XFlush(xdisp);
 }
 
-void egl_init(wl_display* wl_dpy)
+void egl_init(struct wl_display* wl_display)
 {
     EGLConfig config = 0;
     EGLint major, minor;
@@ -58,12 +58,12 @@ void egl_init(wl_display* wl_dpy)
     PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display =
         reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
 
-    eglDisplay = get_platform_display(EGL_PLATFORM_X11_KHR,
+    egl_display = get_platform_display(EGL_PLATFORM_X11_KHR,
                                       (void*)xdisp,
                                       NULL);
 
-//    eglDisplay = eglGetDisplay((EGLNativeDisplayType)window);
-    if(!eglInitialize(eglDisplay, &major, &minor)){
+//    egl_display = eglGetDisplay((EGLNativeDisplayType)window);
+    if(!eglInitialize(egl_display, &major, &minor)){
         printf("!!! eglInitialize\n");
         exit(1);
     }
@@ -79,7 +79,7 @@ void egl_init(wl_display* wl_dpy)
         EGL_NONE
     };
 
-    eglChooseConfig(eglDisplay, attr, &config, 1, &num);
+    eglChooseConfig(egl_display, attr, &config, 1, &num);
     printf("num: %d\n", num);
 
     EGLint ctxattr[] = {
@@ -92,37 +92,37 @@ void egl_init(wl_display* wl_dpy)
         exit(1);
     }
 
-    eglContext = eglCreateContext( eglDisplay, config, EGL_NO_CONTEXT, ctxattr );
+    eglContext = eglCreateContext( egl_display, config, EGL_NO_CONTEXT, ctxattr );
     if( eglContext == EGL_NO_CONTEXT ) {
         fprintf( stderr, "Unable to create EGL context. (%X)\n", eglGetError() );
         return;
     }
 
-    eglSurface = eglCreateWindowSurface(eglDisplay, config, window, NULL);
+    eglSurface = eglCreateWindowSurface(egl_display, config, window, NULL);
 
-    eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
+    eglMakeCurrent(egl_display, eglSurface, eglSurface, eglContext);
 
     PFNEGLBINDWAYLANDDISPLAYWL bind_display =
         reinterpret_cast<PFNEGLBINDWAYLANDDISPLAYWL>(eglGetProcAddress("eglBindWaylandDisplayWL"));
 
     if(bind_display) {
-        bind_display(eglDisplay, wl_dpy);
+        bind_display(egl_display, wl_display);
     }
 
 }
 
 int main(void) {
 
-    wl_display* dpy = wl_display_create();
+    wl_display* display = wl_display_create();
 
-    egl_init(dpy);
+    egl_init(display);
 
-    yawc::compositor::initialize(dpy);
+    yawc::compositor::initialize(display);
 
-    const int stat = wl_display_add_socket(dpy, "wayland-0");
+    const int stat = wl_display_add_socket(display, "wayland-0");
     assert(stat == 0);
 
-    wl_display_run(dpy);
+    wl_display_run(display);
 
     return 0;
 }

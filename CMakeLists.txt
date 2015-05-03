@@ -14,7 +14,7 @@ find_package(X11 REQUIRED)
 #set(PKG_CONFIG_PATH /usr/local/lib/pkgconfig)
 set($ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:$ENV{HOME}/usrfs/lib/pkgconfig")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -g -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++1y -g -O0")
 
 pkg_check_modules(WAYLAND_SERVER REQUIRED wayland-server)
 pkg_check_modules(WAYLAND_CLIENT REQUIRED wayland-client)
